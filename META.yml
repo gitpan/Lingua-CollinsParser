@@ -1,6 +1,6 @@
 --- #YAML:1.0
 name: Lingua-CollinsParser
-version: 0.02
+version: 0.03
 author:
   - Ken Williams, ken.williams@thomson.com
 abstract: Head-driven syntactic sentence parser
@@ -13,7 +13,7 @@ build_requires:
 provides:
   Lingua::CollinsParser:
     file: lib/Lingua/CollinsParser.pm
-    version: 0.02
+    version: 0.03
   Lingua::CollinsParser::Node:
     file: lib/Lingua/CollinsParser/Node.pm
-generated_by: Module::Build version 0.24
+generated_by: Module::Build version 0.25_02

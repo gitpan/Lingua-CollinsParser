@@ -42,14 +42,25 @@ AV *unpack_aref(SV *input_rv) {
   return (AV*) SvRV(input_rv);
 }
 
+SV* new_leaf_node(char *token, char *label) {
+  HV *output = newHV();
+  
+  hv_store(output, "node_type", 9, newSVpv("leaf", 4), 0);
+  hv_store(output, "token",     5, newSVpv(token,  0), 0);
+  hv_store(output, "label",     5, newSVpv(label,  0), 0);
+
+  return sv_bless(newRV_noinc((SV*) output),
+		  gv_stashpv("Lingua::CollinsParser::Node", 0));
+}
+
 char *node_types[4] = { "leaf", "nonterminal", "", "unary" };
 
 /* (TOP~flies~1~1 (S~flies~2~2 (NPB~bird~2~2 The/DT bird/NN ) (VP~flies~1~1 flies/VBZ ) ) ) */
 SV* edge_as_tree(int e) {
-  int i,j,w,next;
-  int flag;
+  int i;
   AV *children;
   HV *output, *node_stash;
+  SV *label;
   edge_type edge;
 
   sentence_type *current = get_current();
@@ -61,16 +72,24 @@ SV* edge_as_tree(int e) {
 
   edge = edges[e];
 
-  flag=1;
-  
-  if(get_treebankoutputflag() &&
-   (edge.label == NT_NP || edge.label == NT_NPA)
-     && edge.numchild ==1)
+  if(get_treebankoutputflag()
+     && (edge.label == NT_NP || edge.label == NT_NPA)
+     && edge.numchild == 1
+     && edges[ childs[edge.child1] ].label == NT_NPB) {
+
+    /* Skip this container node when 'npflag' is enabled. */
+    return edge_as_tree(childs[edge.child1]);
+  }
+
+  if(edge.type==0)
     {
-      j= childs[edge.child1];
-      if(edges[j].label == NT_NPB)
-	flag=0;
+      /* This is a leaf */
+      return new_leaf_node( current->words[current->wordpos[edge.head]],
+			    nts[(int) edge.headtag] );
     }
+
+
+  /* This node has children, i.e. is not a leaf */
 
   output = newHV();
   hv_store(output, "node_type", 9, newSVpv(node_types[(int) edge.type], 0), 0);
@@ -81,65 +100,72 @@ SV* edge_as_tree(int e) {
 
   node_stash = gv_stashpv("Lingua::CollinsParser::Node", 0);
 
-  /*POS tag case*/
-
-  /*POS tag - print preceding punctuation*/
-  /* All the printf() stuff in here is code that needs to be converted to perl */
-  if(edge.type==0)
-    {
-      SV *token, *pos;
-
-      if(edge.head==0)
-	for(i=0;i<current->wordpos[0];i++)
-	  printf("%s/PUNC%s ",current->words[i],current->tags[i]);
-
-      token = newSVpv( current->words[current->wordpos[edge.head]], 0 );
-      hv_store(output, "token", 5, token, 0);
-
-      pos = newSVpv( nts[(int) edge.headtag], 0 );
-      hv_store(output, "label", 5, pos, 0);
-
-      w=current->wordpos[edge.head];
-      if(edge.head==current->nws_np-1)
-	next=current->nws;
-      else
-	next=current->wordpos[edge.head+1];
-      for(i=w+1;i<next;i++)
-	printf("%s/PUNC%s ",current->words[i],current->tags[i]);
-      
-      return sv_bless(newRV_noinc((SV*) output), node_stash);
-    }
-
-  if(flag)
-    {
-      /* printf("%s",nts[(int) edge.label]); */
-      SV *label = newSVpv( nts[(int) edge.label], 0 );
-      hv_store(output, "label", 5, label, 0);
-
-      
-      if(1) {/* the print_wholent() code */
-	if(edge.type==4)
-	  {
-	    printf("_NA~%d",edge.numchild);
-	  }
-	else
-	  {
-	    SV *head = newSVpv( current->words[current->wordpos[edge.head]], 0 );
-	    hv_store(output, "head_token", 10, head, 0);
-	    hv_store(output, "num_children", 12, newSViv(edge.numchild), 0);
-	    hv_store(output, "head_child", 10, newSViv(find_childno(e,edge.headch)-1), 0);
-	  }
-      }
-    }
 
   children = newAV();
+  hv_store(output, "children", 8, newRV_noinc((SV*) children), 0);
+
+
+  label = newSVpv( nts[(int) edge.label], 0 );
+  hv_store(output, "label", 5, label, 0);
+  
+  
+  if(edge.type==4)
+    {
+      printf("_NA~%d",edge.numchild);
+    }
+  else
+    {
+      SV *head = newSVpv( current->words[current->wordpos[edge.head]], 0 );
+      int head_num = find_childno(e,edge.headch) - 1;
+      int child_head_edge_num = childs[edge.child1 + head_num];
+      
+      if (child_head_edge_num != -1
+	  && edges[child_head_edge_num].type == 0
+	  && edges[child_head_edge_num].head == 0) {
+	
+	head_num += current->wordpos[0];
+      }
+      
+      hv_store(output, "head_token", 10, head, 0);
+      hv_store(output, "num_children", 12, newSViv(edge.numchild), 0);
+      hv_store(output, "head_child", 10, newSViv(head_num), 0);
+    }
   
   for(i=edge.child1; i<edge.child1+edge.numchild; i++)
     {
+      int j;
+      
+      /* If the child is a leaf, there may be hidden punctuation before &
+       * after it.  Handle that stuff here.
+       */
+      
+      if(childs[i] != -1
+	 && edges[childs[i]].type == 0
+	 && edges[childs[i]].head == 0) {
+	for(j=0; j<current->wordpos[0]; j++)
+	  av_push(children, new_leaf_node(current->words[j], current->tags[j]));
+      }
+      
       av_push(children, edge_as_tree(childs[i]));
+      
+      
+      if(childs[i] != -1
+	 && edges[childs[i]].type == 0) {
+	
+	int w = current->wordpos[edges[childs[i]].head];
+	int next;
+	
+	if(edges[childs[i]].head==current->nws_np-1)
+	  next = current->nws;
+	else
+	  next = current->wordpos[edges[childs[i]].head+1];
+	
+	for(j=w+1; j<next; j++)
+	  av_push(children, new_leaf_node(current->words[j], current->tags[j]));
+      }
+      
     }
   
-  hv_store(output, "children", 8, newRV_noinc((SV*) children), 0);
   
   return sv_bless(newRV_noinc((SV*) output), node_stash);
 }
@@ -283,7 +309,7 @@ parse_sentence (self, words_in, tags_in)
 	croak("%d words given, but %d tags given", numwords, av_len(tags)+1);
 
       /* Fill the sentence_type struct */
-      s = (sentence_type *) malloc(sizeof(sentence_type));
+      New(0, s, 1, sentence_type);
       s->nws = numwords;
       for (i=0; i<numwords; i++) {
 	fetched = av_fetch(words, i, 0);
@@ -325,6 +351,7 @@ parse_sentence (self, words_in, tags_in)
       /*       print_edge(best, 0); */
       /* print_edges_flat(best); */
       output = edge_as_tree(best);
+      Safefree(s);
       XPUSHs(sv_2mortal(output));
     }
 

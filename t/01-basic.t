@@ -21,7 +21,7 @@ if ( -e $events_dump ) {
 }
 
 my @words = qw(The bird flies);
-my @tags  = qw(DT NN VBZ);
+my @tags  = qw(DT  NN   VBZ);
 my $tree = $p->parse_sentence(\@words, \@tags);
 
 # Note - I'm not quite sure what the precise meaning of the "node_type" entry is.
@@ -40,28 +40,23 @@ is_deeply( $tree, {
 				 num_children => 2,
 				 children => [
 					      {
-					       node_type => 'nonterminal',
+					       head_child => 1,
+					       head_token => 'bird',
+					       node_type => 'unary',
+					       label => 'NPB',
+					       num_children => 2,
 					       children => [
 							    {
-							     head_child => 1,
-							     head_token => 'bird',
-							     node_type => 'unary',
-							     label => 'NPB',
-							     num_children => 2,
-							     children => [
-									  {
-									   node_type => 'leaf',
-									   token => 'The',
-									   label => 'DT',
-									  },
-									  {
-									   node_type => 'leaf',
-									   token => 'bird',
-									   label => 'NN',
-									  }
-									 ],
+							     node_type => 'leaf',
+							     token => 'The',
+							     label => 'DT',
+							    },
+							    {
+							     node_type => 'leaf',
+							     token => 'bird',
+							     label => 'NN',
 							    }
-							   ]
+							   ],
 					      },
 					      {
 					       head_child => 0,
@@ -100,12 +95,6 @@ my ($np, $vp) = $phrase->children;
 
 # Check the noun part
 {
-  is $np->node_type, 'nonterminal';
-  is $np->children, 1;
-  
-  # Hmm... need better traversal here
-  $np = ($np->children)[0];
-  
   is $np->head_token, 'bird';
   is $np->node_type, 'unary';
   is $np->label, 'NPB';
@@ -133,11 +122,11 @@ my ($np, $vp) = $phrase->children;
 
   is $vp->node_type, 'leaf';
   is $vp->token, 'flies';
-  is $vp->label, 'VBZ';
+  is $vp->label, 'VBZ', "Check verb label";
 }
 
 my $xml = $tree->as_xml;
-like $xml, qr{<W TAG="DT">The</W>};
+like $xml, qr{<W TAG="DT">The</W>}, "XML output looks like XML";
 
 $p = Lingua::CollinsParser->new();
 ok $p;
@@ -147,12 +136,122 @@ $p->beamsize(10_000);  is $p->beamsize, 10_000;
 $p->punc_flag(1);      is $p->punc_flag, 1;
 $p->distaflag(1);      is $p->distaflag, 1;
 $p->distvflag(1);      is $p->distvflag, 1;
-$p->npflag(1);         is $p->npflag, 1;
+$p->npflag(1);         is $p->npflag, 1,   "npflag can be set correctly";
+
+
+# Check punctuation
+{
+  my (@words, @tags);
+  {
+    no warnings;
+    @words = qw(`` Yes , '' said Ken .);
+    @tags  = qw(`` UH  , '' VBD  NNP .);
+  }
+  my $tree = $p->parse_sentence(\@words, \@tags);
+  ok $tree, "Parsed tree with punctuation";
+
+  
+  use Data::Dumper;
+  $Data::Dumper::Sortkeys = 1;
+
+  is_deeply $tree, {
+	      'children' => [
+			     {
+			      'children' => [
+					     {
+					      'children' => [
+							     {
+							      'label' => "``",
+							      'node_type' => 'leaf',
+							      'token' => "``"
+							     },
+							     {
+							      'label' => 'NNP',
+							      'node_type' => 'leaf',
+							      'token' => 'Yes'
+							     },
+							     {
+							      'label' => ",",
+							      'node_type' => 'leaf',
+							      'token' => ","
+							     },
+							     {
+							      'label' => "''",
+							      'node_type' => 'leaf',
+							      'token' => "''"
+							     },
+							    ],
+					      'head_child' => 1,
+					      'head_token' => 'Yes',
+					      'label' => 'NPB',
+					      'node_type' => 'nonterminal',
+					      'num_children' => 1
+					     },
+					     {
+                                              'children' => [
+							     {
+							      'label' => 'VBD',
+							      'node_type' => 'leaf',
+							      'token' => 'said'
+							     },
+							     {
+							      'children' => [
+									     {
+									      'label' => 'NNP',
+									      'node_type' => 'leaf',
+									      'token' => 'Ken'
+									     },
+									     {
+									      'label' => '.',
+									      'node_type' => 'leaf',
+									      'token' => '.'
+									     }
+									    ],
+							      'head_child' => 0,
+							      'head_token' => 'Ken',
+							      'label' => 'NPB',
+							      'node_type' => 'nonterminal',
+							      'num_children' => 1
+							     }
+                                                            ],
+                                              'head_child' => 0,
+                                              'head_token' => 'said',
+                                              'label' => 'VP',
+                                              'node_type' => 'unary',
+                                              'num_children' => 2
+					     }
+					    ],
+			      'head_child' => 1,
+			      'head_token' => 'said',
+			      'label' => 'S',
+			      'node_type' => 'unary',
+			      'num_children' => 2
+			     }
+			    ],
+	      'head_child' => 0,
+	      'head_token' => 'said',
+	      'label' => 'TOP',
+	      'node_type' => 'nonterminal',
+	      'num_children' => 1
+	     };
+  
+
+
+
+
+
+}
+
 
 # Try dumping events hash & restoring
-$build->add_to_cleanup($events_dump);
-$p->dump_events_hash($events_dump);
-ok 1;
-$p->undump_events_hash($events_dump);
-ok 1;
+SKIP: {
+  skip "Event-hash dumping was tested in a previous run", 2 if -e $events_dump;
+
+  $build->add_to_cleanup($events_dump);
+  $p->dump_events_hash($events_dump);
+  ok 1;
+  $p->undump_events_hash($events_dump);
+  ok 1;
+}
+
 
