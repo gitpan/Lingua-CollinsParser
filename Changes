@@ -1,5 +1,12 @@
 Revision history for Perl extension Lingua::CollinsParser.
 
+0.02  Thu Jul 22 11:44:58 CDT 2004
+
+ - Improved the patches to the Collins parser code so that it builds
+   more cleanly on more platforms (tested on Solaris and Mac OS X).
+   Also removes some spurious status messages that appeared when loading
+   the grammar & events files.
+
 0.01  Tue Jul 20 11:07:52 CDT 2004
 
  - original version
