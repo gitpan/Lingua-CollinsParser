@@ -1,0 +1,11 @@
+Build.PL
+Changes
+INSTALL
+MANIFEST
+META.yml
+Makefile.PL
+Parser.patch
+lib/Lingua/CollinsParser.pm
+lib/Lingua/CollinsParser.xs
+lib/Lingua/CollinsParser/Node.pm
+t/01-basic.t

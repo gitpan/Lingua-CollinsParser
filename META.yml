@@ -1,0 +1,19 @@
+--- #YAML:1.0
+name: Lingua-CollinsParser
+version: 0.01
+author:
+  - Ken Williams, ken.williams@thomson.com
+abstract: Head-driven syntactic sentence parser
+license: perl
+requires:
+  XML::Generator: 0
+build_requires:
+  Module::Build: 0.21
+  Test::More: 0
+provides:
+  Lingua::CollinsParser:
+    file: lib/Lingua/CollinsParser.pm
+    version: 0.01
+  Lingua::CollinsParser::Node:
+    file: lib/Lingua/CollinsParser/Node.pm
+generated_by: Module::Build version 0.24
