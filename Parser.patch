@@ -1,6 +1,6 @@
 ==== //depot/mainline/external/COLLINS-PARSER/code/Makefile#1 - /home/ken/p4/external/COLLINS-PARSER/code/Makefile ====
---- /tmp/tmp.9513.0	Mon Aug  2 10:13:30 2004
-+++ /home/ken/p4/external/COLLINS-PARSER/code/Makefile	Fri Jul 30 11:01:48 2004
+--- /tmp/tmp.1492.0	Fri Sep 13 10:17:29 1974
++++ /home/ken/p4/external/COLLINS-PARSER/code/Makefile	Fri Sep 13 10:17:29 1974
 @@ -2,26 +2,32 @@
  # Compilation and link flags
  #
@@ -48,8 +48,8 @@
 +	$(AR) r $@ $(OBJ)
 +	$(RANLIB) $@
 ==== //depot/mainline/external/COLLINS-PARSER/code/chart.c#1 - /home/ken/p4/external/COLLINS-PARSER/code/chart.c ====
---- /tmp/tmp.9513.1	Mon Aug  2 10:13:30 2004
-+++ /home/ken/p4/external/COLLINS-PARSER/code/chart.c	Tue May 11 15:27:08 2004
+--- /tmp/tmp.1492.1	Fri Sep 13 10:17:29 1974
++++ /home/ken/p4/external/COLLINS-PARSER/code/chart.c	Fri Sep 13 10:17:29 1974
 @@ -30,15 +30,6 @@
  /* pointer to the current sentence being parsed*/
  sentence_type *current;
@@ -127,8 +127,8 @@
    if(best!=-1)
      {
 ==== //depot/mainline/external/COLLINS-PARSER/code/chart.h#1 - /home/ken/p4/external/COLLINS-PARSER/code/chart.h ====
---- /tmp/tmp.9513.2	Mon Aug  2 10:13:30 2004
-+++ /home/ken/p4/external/COLLINS-PARSER/code/chart.h	Tue May 11 15:27:08 2004
+--- /tmp/tmp.1492.2	Fri Sep 13 10:17:29 1974
++++ /home/ken/p4/external/COLLINS-PARSER/code/chart.h	Fri Sep 13 10:17:29 1974
 @@ -62,9 +62,32 @@
  /*print the entire chart*/
  void print_chart();
@@ -163,8 +163,8 @@
  /*parse a sentence, print the output to stdout*/
  void parse_sentence(sentence_type *sentence);
 ==== //depot/mainline/external/COLLINS-PARSER/code/grammar.c#1 - /home/ken/p4/external/COLLINS-PARSER/code/grammar.c ====
---- /tmp/tmp.9513.3	Mon Aug  2 10:13:30 2004
-+++ /home/ken/p4/external/COLLINS-PARSER/code/grammar.c	Thu Jul 15 15:23:48 2004
+--- /tmp/tmp.1492.3	Fri Sep 13 10:17:29 1974
++++ /home/ken/p4/external/COLLINS-PARSER/code/grammar.c	Fri Sep 13 10:17:29 1974
 @@ -25,7 +25,7 @@
  
  #include "grammar.h"
@@ -175,8 +175,8 @@
  void init_grammar();
  void init_lexicons();
 ==== //depot/mainline/external/COLLINS-PARSER/code/hash.c#1 - /home/ken/p4/external/COLLINS-PARSER/code/hash.c ====
---- /tmp/tmp.9513.4	Mon Aug  2 10:13:30 2004
-+++ /home/ken/p4/external/COLLINS-PARSER/code/hash.c	Tue May 11 15:27:09 2004
+--- /tmp/tmp.1492.4	Fri Sep 13 10:17:29 1974
++++ /home/ken/p4/external/COLLINS-PARSER/code/hash.c	Fri Sep 13 10:17:29 1974
 @@ -22,8 +22,81 @@
  */
  
@@ -260,8 +260,8 @@
  void hash_make_table(int size,hash_table *hash)
  {
 ==== //depot/mainline/external/COLLINS-PARSER/code/hash.h#1 - /home/ken/p4/external/COLLINS-PARSER/code/hash.h ====
---- /tmp/tmp.9513.5	Mon Aug  2 10:13:30 2004
-+++ /home/ken/p4/external/COLLINS-PARSER/code/hash.h	Tue May 11 15:27:09 2004
+--- /tmp/tmp.1492.5	Fri Sep 13 10:17:29 1974
++++ /home/ken/p4/external/COLLINS-PARSER/code/hash.h	Fri Sep 13 10:17:29 1974
 @@ -68,4 +68,10 @@
  /*makes a hash table with size elements*/
  void hash_make_table(int size,hash_table *hash);
@@ -274,8 +274,8 @@
 +
  #endif
 ==== //depot/mainline/external/COLLINS-PARSER/code/key.c#1 - /home/ken/p4/external/COLLINS-PARSER/code/key.c ====
---- /tmp/tmp.9513.6	Mon Aug  2 10:13:30 2004
-+++ /home/ken/p4/external/COLLINS-PARSER/code/key.c	Tue May 11 15:27:09 2004
+--- /tmp/tmp.1492.6	Fri Sep 13 10:17:29 1974
++++ /home/ken/p4/external/COLLINS-PARSER/code/key.c	Fri Sep 13 10:17:29 1974
 @@ -32,33 +32,20 @@
    if(k1->klen!=k2->klen)
      return 0;
@@ -313,9 +313,21 @@
  }
  
  int hashval(key_type *key,int size)
+==== //depot/mainline/external/COLLINS-PARSER/code/lexicon.c#1 - /home/ken/p4/external/COLLINS-PARSER/code/lexicon.c ====
+--- /tmp/tmp.1492.7	Fri Sep 13 10:17:29 1974
++++ /home/ken/p4/external/COLLINS-PARSER/code/lexicon.c	Fri Sep 13 10:17:29 1974
+@@ -47,7 +47,7 @@
+   
+   for(i=0;i<strlen(word);i++)
+     {
+-      h=(h*word[i])%size;
++      h=(h * (unsigned char)word[i])%size;
+     }
+ 
+   return h;
 ==== //depot/mainline/external/COLLINS-PARSER/code/readevents.c#1 - /home/ken/p4/external/COLLINS-PARSER/code/readevents.c ====
---- /tmp/tmp.9513.7	Mon Aug  2 10:13:30 2004
-+++ /home/ken/p4/external/COLLINS-PARSER/code/readevents.c	Tue May 11 15:27:11 2004
+--- /tmp/tmp.1492.8	Fri Sep 13 10:17:29 1974
++++ /home/ken/p4/external/COLLINS-PARSER/code/readevents.c	Fri Sep 13 10:17:29 1974
 @@ -47,11 +47,9 @@
  
    while(fscanf(file,"%d",&code)!=EOF&&(m<max||max==-1))
@@ -330,8 +342,8 @@
  
        if(code==F_CODE)
 ==== //depot/mainline/external/COLLINS-PARSER/code/sentence.c#1 - /home/ken/p4/external/COLLINS-PARSER/code/sentence.c ====
---- /tmp/tmp.9513.8	Mon Aug  2 10:13:30 2004
-+++ /home/ken/p4/external/COLLINS-PARSER/code/sentence.c	Tue May 11 15:27:12 2004
+--- /tmp/tmp.1492.9	Fri Sep 13 10:17:29 1974
++++ /home/ken/p4/external/COLLINS-PARSER/code/sentence.c	Fri Sep 13 10:17:29 1974
 @@ -24,8 +24,6 @@
  #include <assert.h>
  #include "sentence.h"
@@ -342,8 +354,8 @@
  {
    int i;
 ==== //depot/mainline/external/COLLINS-PARSER/code/sentence.h#1 - /home/ken/p4/external/COLLINS-PARSER/code/sentence.h ====
---- /tmp/tmp.9513.9	Mon Aug  2 10:13:30 2004
-+++ /home/ken/p4/external/COLLINS-PARSER/code/sentence.h	Tue May 11 15:27:12 2004
+--- /tmp/tmp.1492.10	Fri Sep 13 10:17:29 1974
++++ /home/ken/p4/external/COLLINS-PARSER/code/sentence.h	Fri Sep 13 10:17:29 1974
 @@ -99,6 +99,8 @@
  
  */
