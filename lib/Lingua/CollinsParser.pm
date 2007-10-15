@@ -1,5 +1,5 @@
 package Lingua::CollinsParser;
-our $VERSION = '0.04';
+our $VERSION = '0.05';
 our @ISA = qw(DynaLoader);
 
 use 5.006;
@@ -200,7 +200,8 @@ corresponding part-of-speech tags.  A C<Lingua::CollinsParser::Node>
 object is returned, representing a syntax tree for the sentence.
 
 To generate the array of part-of-speech tags, you may be interested in
-Lingua::EN::Tagger, InXight, or GATE (I've only used the latter two).
+C<Lingua::BrillTagger>, InXight (L<http://www.inxight.com/>), or GATE
+(L<http://gate.ac.uk/>).
 
 =item dump_events_hash($file)
 
@@ -224,9 +225,25 @@ C<dump_events_hash()>.
 
 Ken Williams, ken.williams@thomson.com
 
+
+=head1 COPYRIGHT
+
+The Lingua::CollinsParser perl interface is copyright (C) 2004 Thomson
+Legal & Regulatory, and written by Ken Williams.  It is free software;
+you can redistribute it and/or modify it under the same terms as Perl
+itself.
+
+The Collins Parser is copyright (C) 1999 by Michael Collins - you will
+find full copyright and license information in its distribution.  The
+F<Parser.patch> file distributed here is granted under the same license
+terms as the parser code itself.
+
+
 =head1 SEE ALSO
 
 Lingua::CollinsParser::Node
+
+Lingua::BrillTagger
 
 L<http://www.ai.mit.edu/people/mcollins/code.html> (The Collins Parser)
 
